@@ -1,0 +1,3 @@
+Get-Content input.txt | .\code
+
+g++ code.cpp -o flight ; Get-Content input.txt | .\flight

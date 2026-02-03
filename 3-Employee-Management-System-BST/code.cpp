@@ -1,3 +1,5 @@
+//BST
+
 #include <iostream>
 #include <stack>
 using namespace std;
@@ -177,6 +179,53 @@ void leastSalary(Node* root) {
          << ", Position: " << temp->position << ", Date of Joining: " << temp->dateOfJoining << endl;
 }
 
+int ans, count;
+
+void inorderForKthsmallest(Node* root, int k) {
+    if (root == NULL || count >= k) return;
+
+    inorderForKthsmallest(root->lchild, k);
+
+    count++;
+    if (count == k) {
+        ans = root->salary;
+        return;
+    }
+
+    inorderForKthsmallest(root->rchild, k);
+}
+
+int kthSmallest(Node* root, int k) {
+    ans = -1;
+    count = 0;
+    inorderForKthsmallest(root, k);
+    return ans;
+}
+
+
+void reverseInorder(Node* root, int k) {
+    if (root == NULL || count >= k) return;
+
+    reverseInorder(root->rchild, k);
+
+    count++;
+    if (count == k) {
+        ans = root->salary;
+        return;
+    }
+
+    reverseInorder(root->lchild, k);
+}
+
+int kthHighest(Node* root, int k) {
+    ans = -1;
+    count = 0;
+    reverseInorder(root, k);
+    return ans;
+}
+
+
+
 void highestSalary(Node* root) {
     if(root == NULL) {
         cout << "Tree is empty." << endl;
@@ -248,7 +297,12 @@ int main() {
         cout << "4. Search Employee by Salary\n";
         cout << "5. Search Employee by ID\n";
         cout << "6. Delete Employee by Salary\n";
-        cout << "7. Exit\n";
+        cout << "7. Enter New Employee Data\n";
+        cout << "8. Show Employee with Least Salary\n";
+        cout << "9. Show Employee with Highest Salary\n";
+        cout << "10. kth Smallest Salary\n";
+        cout << "11. kth Highest Salary\n";
+        cout << "12. Exit\n";
         cout << "Enter your choice: ";
         int choice;
         cin >> choice;
@@ -285,6 +339,39 @@ int main() {
                 cout << "Employee with salary " << salary << " deleted if existed.\n";
                 break;
             case 7:
+                tree(root1);
+                break;
+            case 8:
+                leastSalary(root1);
+                break;
+            case 9:
+                highestSalary(root1);
+                break;
+            case 10: {
+                int k;
+                cout << "Enter k for kth smallest salary: ";
+                cin >> k;
+                int kth_small = kthSmallest(root1, k);
+                if(kth_small != -1)
+                    cout << k << "th smallest salary is: " << kth_small << endl;
+                else
+                    cout << "Less than " << k << " employees in the system." << endl;
+                break;
+            }
+
+            case 11: {
+                int k1;
+                cout << "Enter k for kth highest salary: ";
+                cin >> k1;
+                int kth_high = kthHighest(root1, k1);
+                if(kth_high != -1)
+                    cout << k1 << "th highest salary is: " << kth_high << endl;
+                else
+                    cout << "Less than " << k1 << " employees in the system." << endl;
+                break;
+            }
+            
+            case 12:
                 F = false;
                 break;
             default:
