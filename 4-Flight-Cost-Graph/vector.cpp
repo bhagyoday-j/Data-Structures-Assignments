@@ -7,7 +7,7 @@
 using namespace std;
 
 class Graph {
-private:
+public:
     int V;                                  
     vector<vector<int>> fuel;               
     vector<string> cities;              
@@ -29,11 +29,12 @@ public:
 
         cout << "\nEnter fuel required between flights:\n";
         for (int i = 0; i < V; i++) {
-            for (int j = 0; j < V; j++) {
+            for (int j = i + 1; j < V; j++) {
                 if(i == j) continue;
                 
                 cout << "Fuel from " << cities[i] << " to " << cities[j] << ": ";
                 cin >> fuel[i][j];
+                fuel[j][i] = fuel[i][j];
             }
         }
     }
@@ -51,7 +52,7 @@ public:
     void printAdjacencyList() {
         cout << "\nAdjacency List:\n";
         for (int i = 0; i < V; i++) {
-            cout << cities[i] << " -> ";
+            cout << i << " -> ";
             for (int j = 0; j < V; j++) {
                 cout << fuel[i][j] << " ";
             }
@@ -62,7 +63,7 @@ public:
     void printFlightDetails() {
         cout << "\nFlight Details:\n";
         for (int i = 0; i < V; i++) {
-            for (int j = 0; j < V; j++) {
+            for (int j = i + 1; j < V; j++) {
                 cout << "Fuel required from "
                      << cities[i] << " to "
                      << cities[j] << " = "
