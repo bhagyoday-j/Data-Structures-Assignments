@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "d:/CODING/DS_Assinments",
-      "program": "d:/CODING/DS_Assinments/build/Debug/outDebug",
+      "cwd": "d:/CODING/DS_Assinments/4-MST",
+      "program": "d:/CODING/DS_Assinments/4-MST/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
