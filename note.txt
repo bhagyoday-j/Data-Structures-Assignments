@@ -1,3 +1,34 @@
 Get-Content input.txt | .\code
 
 g++ code.cpp -o flight ; Get-Content input.txt | .\flight
+
+
+9
+
+4
+-1*5
+8
+-1
+8
+-1*4
+11
+-1
+7
+-1
+4
+-1
+-1
+2
+9
+14
+-1*3
+10
+-1*3
+2
+-1
+-1
+1
+6
+7
+
+
