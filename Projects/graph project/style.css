@@ -1,0 +1,29 @@
+body {
+  font-family: Arial;
+  text-align: center;
+}
+
+#map {
+  height: 500px;
+  width: 90%;
+  margin: auto;
+  border: 2px solid black;
+}
+
+.controls {
+  margin: 20px;
+}
+
+.city-label {
+  background: none;
+  border: none;
+  color: black;
+  font-size: 14px;
+}
+
+.distance-label {
+  background: white;
+  padding: 2px;
+  border-radius: 3px;
+  font-size: 12px;
+}
