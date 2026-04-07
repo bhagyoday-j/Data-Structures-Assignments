@@ -13,11 +13,11 @@ const cities = {
 // graph adjacency list
 const graph = {
   0:[{node:1,weight:150},{node:2,weight:210}],
-  1:[{node:3,weight:330}],
-  2:[{node:3,weight:180}],
-  3:[{node:4,weight:500}],
-  4:[{node:5,weight:800}],
-  5:[]
+  1:[{node:0,weight:150},{node:3,weight:330}],
+  2:[{node:0,weight:210},{node:3,weight:180}],
+  3:[{node:1,weight:330},{node:2,weight:180},{node:4,weight:500}],
+  4:[{node:3,weight:500},{node:5,weight:800}],
+  5:[{node:4,weight:800}]
 };
 
 // edges for drawing
