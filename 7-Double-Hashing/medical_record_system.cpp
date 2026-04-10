@@ -55,13 +55,19 @@ void insert(vector<Patient*>& ht, Patient* patient) {
   int v = hashFn2(key, n);
 
   int i = 0;
-  while(i < n) {
+  int temp = -1;
+
+  while(true) {
     int idx = (u + i*v) % n;
+
+    if(i == 1) temp = idx;
 
     if(ht[idx] == nullptr) {
       ht[idx] = patient;
       return;
     }
+
+    if(i != 1 && idx == temp) break;
 
     i++;
   }
