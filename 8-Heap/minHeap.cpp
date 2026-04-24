@@ -14,6 +14,7 @@ parent of i is (i-1)/2
 */
 
 #include <iostream>
+#include <algorithm>
 #include <vector>
 using namespace std;
 
@@ -24,7 +25,7 @@ void insert(vector<int>& heap, int key) {
 
   int i = n - 1;
 
-  while(i >= 1) {
+  while(i > 1) {
     int parent = i / 2;
 
     if(parent >= 1 && heap[parent] > heap[i]) {
@@ -70,10 +71,57 @@ void deleteRoot(vector<int>& heap) {
       break;
     } else {
       swap(heap[minIdx], heap[i]);
+      i = minIdx;
     }
   }
 
   cout << "Root deleted" << endl;
+}
+
+void deleteKey(vector<int>& heap, int key) {
+  int n = heap.size();
+
+  if(n == 1 || n == 0) {
+    cout << "Heap is empty" << endl;
+    return;
+  }
+  int deleteIndex = -1;
+  
+  for(int i = 1; i < n; i++) {
+    if(heap[i] == key) {
+      deleteIndex = i;
+      heap[i] = heap[n-1];
+      heap.pop_back();
+      n = heap.size();
+      break;
+    }
+  }
+
+  int i = deleteIndex;
+
+  while(i < n) {
+    int left = i*2;
+    int right = i*2 + 1;
+    
+    int maxIdx = i;
+
+    if(left < n && heap[maxIdx] > heap[left]) {
+      maxIdx = left;
+    }
+
+    if(right < n && heap[maxIdx] > heap[right]) {
+      maxIdx = right;
+    }
+
+    if(i == maxIdx) {
+      break;
+    } else {
+      swap(heap[maxIdx], heap[i]);
+      i = maxIdx;
+    }
+  }
+
+  cout << "Key deleted" << endl;
 }
 
 bool search(vector<int> heap, int key) {
@@ -106,7 +154,8 @@ int main() {
     cout << "2. Delete Root" << endl;
     cout << "3. Search" << endl;
     cout << "4. Display" << endl;
-    cout << "5. Exit" << endl;
+    cout << "5. Delete Key" << endl;
+    cout << "6. Exit" << endl;
     cout << "Enter your choice: ";
     cin >> ch;
 
@@ -134,7 +183,15 @@ int main() {
         break;
       }
       case 5: {
+        int key;
+        cout << "Enter the percentage of student to delete: ";
+        cin >> key;
+        deleteKey(heap, key);
+        break;
+      }
+      case 6: {
         return 0;
+        break;
       }
       default: {
         cout << "Invalid choice" << endl;
@@ -144,3 +201,12 @@ int main() {
 
   return 0;
 }
+
+/*
+an online shop system is an application that allows customers to browse an online shop system and purchase products online one way to implement the bat end of an online shop system is by using an optimal binary tree data structure
+7-> 31/3/2026
+*/
+
+/*
+a dictionary stores key words and its meaning. provides facilities for adding new key words , deleting key words , updating values of any entry. provide facilitie to display whole data sorted in accending or discending order . also find how many maximum comparisons may require for finding any key word . use height balanced tree and find complexity for finding any key word
+*/
