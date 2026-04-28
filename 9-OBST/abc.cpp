@@ -1,15 +1,47 @@
 #include <iostream>
 #include <vector>
-#include <climits>
-
+#include <cfloat>
 using namespace std;
 
-void obst(vector<int> p, vector<int> q, vector<int> keys) {
-    int n = keys.size();
+class OBST {
+    int n;
+    vector<string> keys;
+    vector<float> p;
+    vector<float> q;
+    vector<vector<float>> w;
+    vector<vector<float>> c;
+    vector<vector<int>> r;
 
-    vector<vector<int>> w(n+1, vector<int>(n+1, 0));//weight
-    vector<vector<int>> c(n+1, vector<int>(n+1, 0));//cost
-    vector<vector<int>> r(n+1, vector<int>(n+1, 0));//root
+public:
+    void buildOBST();
+    void preorder(int i, int j);
+    void showResult();
+};
+
+void OBST::buildOBST() {
+    cout << "\nEnter number of products: ";
+    cin >> n;
+    keys.resize(n + 1);
+    p.resize(n + 1);
+    q.resize(n + 1);
+    w.resize(n + 1, vector<float>(n + 1, 0));
+    c.resize(n + 1, vector<float>(n + 1, 0));
+    r.resize(n + 1, vector<int>(n + 1, 0));
+
+    cout << "Enter products:\n";
+    for (int i = 1; i <= n; i++) {
+        cin >> keys[i];
+    }
+
+    cout << "Enter successful search probabilities (p[i]):\n";
+    for (int i = 1; i <= n; i++) {
+        cin >> p[i];
+    }
+
+    cout << "Enter failure probabilities (q[i]):\n";
+    for (int i = 0; i <= n; i++) {
+        cin >> q[i];
+    }
 
     for (int i = 0; i <= n; i++) {
         w[i][i] = q[i];
@@ -17,88 +49,57 @@ void obst(vector<int> p, vector<int> q, vector<int> keys) {
         r[i][i] = 0;
     }
 
-    // length of subtree
+    for (int i = 0; i <= n; i++) {
+        for (int j = i + 1; j <= n; j++) {
+            w[i][j] = w[i][j - 1] + p[j] + q[j];
+        }
+    }
+
     for (int len = 1; len <= n; len++) {
         for (int i = 0; i <= n - len; i++) {
             int j = i + len;
 
-            // weight calculation
-            w[i][j] = w[i][j - 1] + p[j - 1] + q[j];
-
-            // find minimum cost
-            c[i][j] = INT_MAX;
+            c[i][j] = FLT_MAX;
 
             for (int k = i + 1; k <= j; k++) {
-                int cost = c[i][k - 1] + c[k][j];
+                float cost = c[i][k - 1] + c[k][j] + w[i][j];
+
                 if (cost < c[i][j]) {
                     c[i][j] = cost;
                     r[i][j] = k;
                 }
             }
-
-            c[i][j] += w[i][j];
         }
-    }
-
-    // Display cost matrix
-    cout << "\nCost Matrix:\n";
-    for (int i = 0; i <= n; i++) {
-        for (int j = 0; j <= n; j++) {
-            cout << c[i][j] << "\t";
-        }
-        cout << endl;
-    }
-
-    // Display root matrix
-    cout << "\nRoot Matrix:\n";
-    for (int i = 0; i <= n; i++) {
-        for (int j = 0; j <= n; j++) {
-            cout << r[i][j] << "\t";
-        }
-        cout << endl;
     }
 }
 
+void OBST::preorder(int i, int j) {
+    if (i >= j) return;
+
+    int root = r[i][j];
+    cout << keys[root] << " ";
+
+    preorder(i, root - 1);
+    preorder(root, j);
+}
+
+void OBST::showResult() {
+    cout << "\n\n\nOBST of products \n";
+
+    cout << "Preorder Traversal: ";
+    preorder(0, n);
+
+    cout << "\n-------------------------------\n";
+    cout << "Root of Tree: " << keys[r[0][n]] << "\n";
+}
+
 int main() {
-  /*
-    int n;
+    OBST obj;
 
-    cout << "Enter size of keys : ";
-    cin >> n;
+    obj.buildOBST();
+    obj.showResult();
 
-    vector<int> keys;
-    vector<int> p;     // success probabilities
-    vector<int> q;  // failure probabilities
-
-    cout << "Enter keys (n) : ";
-    for (int i = 0; i < n; i++) {
-        int key;
-        cin >> key;
-        keys.push_back(key);
-    }
-
-    cout << "Enter success probabilities (n) : ";
-    for (int i = 0; i < n; i++) {
-        int prob;
-        cin >> prob;
-        p.push_back(prob);
-    }
-
-    cout << "Enter failure probabilities (n+1) : ";
-    for (int i = 0; i <= n; i++) {
-        int prob;
-        cin >> prob;
-        q.push_back(prob);
-    }
-        
-  */
-
-     // Example:
-    vector<int> keys = {10, 20, 30};
-    vector<int> p = {3, 3, 1};     // success probabilities
-    vector<int> q = {2, 3, 1, 1};  // failure probabilities
-
-    obst(p, q, keys);
+    cout << "\n\n";
 
     return 0;
 }
