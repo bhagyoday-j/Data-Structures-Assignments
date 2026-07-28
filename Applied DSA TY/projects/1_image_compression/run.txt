@@ -1,0 +1,42 @@
+QUADTREE IMAGE COMPRESSION - BUILD & RUN INSTRUCTIONS
+=====================================================
+
+PROJECT OVERVIEW
+----------------
+This is a C++ QuadTree-based image compression project using CMake and OpenCV.
+It applies a Divide-and-Conquer algorithm: recursively splitting an image into
+quadrants and storing average colors for uniform regions.
+
+PREREQUISITES
+-------------
+1. CMake (>= 3.10)
+2. C++17 compiler (MSVC, GCC, or Clang)
+3. OpenCV (any version)
+
+INSTALLING OPENCV
+-----------------
+- Windows (MSVC): Download from https://opencv.org/releases/, extract it, and
+  set the OpenCV_DIR environment variable to the build directory
+  (e.g., C:\opencv\build).
+- Linux: sudo apt install libopencv-dev
+- macOS:   brew install opencv
+
+BUILD INSTRUCTIONS
+------------------
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build .
+
+RUNNING
+-------
+    ./bin/ImageCompression.exe   (Windows)
+    ./bin/ImageCompression       (Linux/macOS)
+
+NOTES
+-----
+- The CMakeLists.txt expects source files at src/main.cpp, src/QuadTree.cpp,
+  and src/ImageProcessor.cpp. If these don't exist yet, you'll need to
+  implement them first.
+- The executable is output to the bin/ directory.
+- Place input images in the images/ directory. Output images go to output/.

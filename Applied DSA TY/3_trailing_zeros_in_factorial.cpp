@@ -38,9 +38,13 @@ int findSmallestNumberWithNTrailingZeros(int n) {
 
 int main() {
 
-  int n = findSmallestNumberWithNTrailingZeros(2);
+  int n;
+  cout << "Enter n : ";
+  cin >> n;
 
-  cout << n;
+  int m = findSmallestNumberWithNTrailingZeros(n);
+
+  cout << m;
 
   return 0;
 }
