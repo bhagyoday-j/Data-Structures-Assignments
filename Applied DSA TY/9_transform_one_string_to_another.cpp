@@ -1,3 +1,12 @@
+/*
+Implement Check if it is possible to transform one string to another. 
+
+Statement: - Given two strings s1 and s2 (all letters in uppercase). 
+Check if it is possible to convert s1 to s2 by performing following 
+operations. 1. Make some lowercase letters upper. 2. Delete all the 
+lowercase letters 
+*/
+
 #include <iostream>
 #include <string>
 #include <vector>

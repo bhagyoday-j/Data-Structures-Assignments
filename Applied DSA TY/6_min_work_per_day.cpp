@@ -1,3 +1,14 @@
+/*
+Implement a problem of minimum work to be done per day to CO2 
+finish given tasks within D days problem.  
+
+Statement: Given an array 
+task [] of size N denoting amount of work to be done for each task, the 
+problem is to find the minimum amount of work to be done on each 
+day so that all the tasks can be completed in at most D days. 
+Note: On one day work can be done for only one task. 
+*/
+
 #include <iostream>
 #include <vector>
 #include <numeric>

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="EV Charging Station Slot Optimizer - a Greedy Algorithm based smart charging scheduler built with HTML5, CSS3 and Vanilla ES6+ JavaScript. DSA Capstone Project, CIA 2." />
+<meta name="author" content="[Your Name]" />
+<title>&#9889; EV Charging Station Slot Optimizer | Greedy Algorithm Scheduler</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- ============================== HEADER ============================== -->
+<header class="app-header">
+  <div class="shell header-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">&#9889;</span>
+      <div class="brand-text">
+        <h1>EV Charging Station Slot Optimizer</h1>
+        <p class="brand-sub">Greedy Algorithm Based Smart Charging Scheduler</p>
+        <p class="brand-badge">DSA Capstone Project &mdash; CIA 2</p>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="clock-block" aria-live="off">
+        <span class="clock-label">Station Time</span>
+        <span class="clock-value" id="headerClock">09:00</span>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn btn-ghost" id="btnDemo" title="Run the full automated demonstration">
+          <span aria-hidden="true">&#127916;</span> Demo Mode
+        </button>
+        <button type="button" class="btn btn-ghost" id="btnResetAll" title="Reset the whole simulation to defaults">
+          <span aria-hidden="true">&#8635;</span> Reset Simulation
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<div class="shell">
+
+  <!-- ========================= STATION OVERVIEW ========================= -->
+  <section class="panel" id="overview" aria-labelledby="overview-title">
+    <div class="panel-head">
+      <h2 id="overview-title">Station Overview</h2>
+      <span class="panel-hint" id="runStamp">Awaiting first optimization run</span>
+    </div>
+
+    <div class="kpi-grid" id="kpiGrid">
+      <article class="kpi-card">
+        <span class="kpi-label">Total EVs</span>
+        <strong class="kpi-value" id="kpiTotal">0</strong>
+        <span class="kpi-foot">arrived at station</span>
+      </article>
+      <article class="kpi-card kpi-ok">
+        <span class="kpi-label">Available Slots</span>
+        <strong class="kpi-value" id="kpiSlotsFree">0</strong>
+        <span class="kpi-foot" id="kpiSlotsTotal">of 0 slots</span>
+      </article>
+      <article class="kpi-card kpi-busy">
+        <span class="kpi-label">Occupied Slots</span>
+        <strong class="kpi-value" id="kpiSlotsUsed">0</strong>
+        <span class="kpi-foot" id="kpiSlotsUsedPct">0% utilisation</span>
+      </article>
+      <article class="kpi-card kpi-power">
+        <span class="kpi-label">Available Electricity</span>
+        <strong class="kpi-value" id="kpiPower">0<span class="kpi-unit">kW</span></strong>
+        <span class="kpi-foot" id="kpiPowerTotal">of 0 kW capacity</span>
+      </article>
+      <article class="kpi-card kpi-charge">
+        <span class="kpi-label">EVs Charging</span>
+        <strong class="kpi-value" id="kpiCharging">0</strong>
+        <span class="kpi-foot" id="kpiChargingIds">&mdash;</span>
+      </article>
+      <article class="kpi-card kpi-wait">
+        <span class="kpi-label">EVs Waiting</span>
+        <strong class="kpi-value" id="kpiWaiting">0</strong>
+        <span class="kpi-foot" id="kpiDeferred">0 deferred</span>
+      </article>
+      <article class="kpi-card kpi-score">
+        <span class="kpi-label">Average Priority Score</span>
+        <strong class="kpi-value" id="kpiAvgScore">0.0</strong>
+        <span class="kpi-foot" id="kpiAvgAllocated">allocated avg 0.0</span>
+      </article>
+      <article class="kpi-card kpi-util">
+        <span class="kpi-label">Power Utilisation</span>
+        <strong class="kpi-value" id="kpiUtil">0<span class="kpi-unit">%</span></strong>
+        <span class="kpi-foot" id="kpiViolations">0 deadline violations</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ====================== STATION CONFIGURATION ====================== -->
+  <section class="panel" id="config" aria-labelledby="config-title">
+    <div class="panel-head">
+      <h2 id="config-title">Station Configuration</h2>
+      <span class="panel-hint">Adjust the resources, then re-run the greedy optimizer</span>
+    </div>
+
+    <form class="config-form" id="configForm" novalidate>
+      <div class="field">
+        <label for="cfgSlots">Charging Slots</label>
+        <input type="number" id="cfgSlots" name="chargingSlots" min="1" max="24" step="1" value="5" required />
+        <small class="field-error" id="errSlots" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="cfgCapacity">Electricity Capacity (kW)</label>
+        <input type="number" id="cfgCapacity" name="electricityCapacity" min="1" max="500" step="1" value="50" required />
+        <small class="field-error" id="errCapacity" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="cfgPower">Current Available Power (kW)</label>
+        <input type="number" id="cfgPower" name="availablePower" min="0" max="500" step="1" value="40" required />
+        <small class="field-error" id="errPower" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="cfgSession">Session Duration (min)</label>
+        <input type="number" id="cfgSession" name="sessionDuration" min="5" max="480" step="5" value="60" required />
+        <small class="field-error" id="errSession" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="cfgTime">Current Station Time</label>
+        <input type="time" id="cfgTime" name="currentTime" value="09:00" required />
+        <small class="field-error" id="errTime" role="alert"></small>
+      </div>
+
+      <div class="config-actions">
+        <button type="submit" class="btn btn-primary" id="btnRun">
+          <span aria-hidden="true">&#9654;</span> Run Greedy Optimization
+        </button>
+        <button type="button" class="btn btn-secondary" id="btnGenerate">Generate New EVs</button>
+        <button type="button" class="btn btn-secondary" id="btnStartSim">
+          <span aria-hidden="true">&#9654;&#9654;</span> Start Simulation
+        </button>
+        <button type="button" class="btn btn-ghost" id="btnDefaults">Load Default Config</button>
+      </div>
+    </form>
+
+    <div class="preset-row" role="group" aria-label="Station presets">
+      <span class="preset-label">Presets:</span>
+      <button type="button" class="chip-btn" data-preset="peak">Peak Hour (5 slots / 40 kW)</button>
+      <button type="button" class="chip-btn" data-preset="night">Night (8 slots / 60 kW)</button>
+      <button type="button" class="chip-btn" data-preset="scarce">Power Scarcity (3 slots / 20 kW)</button>
+      <button type="button" class="chip-btn" data-preset="wide">Wide Open (12 slots / 90 kW)</button>
+    </div>
+    <p class="form-note" id="configNote">Tip: try the <strong>Power Scarcity</strong> preset to see the greedy algorithm reject EVs whose required power exceeds what is left.</p>
+  </section>
+
+  <!-- ======================= CHARGING SLOT VIZ ======================= -->
+  <section class="panel" id="slots" aria-labelledby="slots-title">
+    <div class="panel-head">
+      <h2 id="slots-title">Charging Slot Visualization</h2>
+      <span class="legend" aria-hidden="true">
+        <i class="dot dot-green"></i>Charging
+        <i class="dot dot-amber"></i>At Risk
+        <i class="dot dot-red"></i>Critical / Deferred
+        <i class="dot dot-gray"></i>Available
+      </span>
+    </div>
+    <div class="slot-grid" id="slotGrid"></div>
+  </section>
+
+  <!-- ====================== PRIORITY RANKING TABLE ====================== -->
+  <section class="panel" id="ranking" aria-labelledby="ranking-title">
+    <div class="panel-head">
+      <h2 id="ranking-title">Priority Ranking</h2>
+      <span class="panel-hint" id="rankingCount">0 EVs</span>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <label class="sr-only" for="searchInput">Search EV by ID or model</label>
+        <input type="search" id="searchInput" placeholder="Search by EV ID or model&hellip;" autocomplete="off" />
+      </div>
+      <div class="filter-group" role="group" aria-label="Filter EVs by status">
+        <button type="button" class="filter-btn is-active" data-filter="all">All</button>
+        <button type="button" class="filter-btn" data-filter="charging">Charging</button>
+        <button type="button" class="filter-btn" data-filter="waiting">Waiting</button>
+        <button type="button" class="filter-btn" data-filter="critical">Critical</button>
+        <button type="button" class="filter-btn" data-filter="high">High Priority</button>
+        <button type="button" class="filter-btn" data-filter="normal">Normal</button>
+      </div>
+      <div class="sort-wrap">
+        <label class="sr-only" for="sortSelect">Sort table by</label>
+        <select id="sortSelect">
+          <option value="priority">Sort: Priority Score</option>
+          <option value="battery">Sort: Battery %</option>
+          <option value="departure">Sort: Departure Time</option>
+          <option value="distance">Sort: Remaining Distance</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" id="rankingTable">
+        <caption class="sr-only">All electric vehicles sorted by the greedy priority score with individual score components</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="col-rank">Rank</th>
+            <th scope="col">EV ID</th>
+            <th scope="col">Model</th>
+            <th scope="col" class="num">Battery %</th>
+            <th scope="col" class="num">Rem. Distance</th>
+            <th scope="col" class="num">Charging Time</th>
+            <th scope="col">Departure</th>
+            <th scope="col">Vehicle Priority</th>
+            <th scope="col" class="num">Urgency</th>
+            <th scope="col" class="num">Battery</th>
+            <th scope="col" class="num">Deadline</th>
+            <th scope="col" class="num">Distance</th>
+            <th scope="col" class="num">Final Score</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody id="rankingBody"></tbody>
+      </table>
+    </div>
+    <p class="table-hint" id="tableHint">Score components are shown exactly as the algorithm computed them &mdash; nothing is hidden.</p>
+  </section>
+
+  <!-- ==================== GREEDY ALGORITHM VISUALIZER ==================== -->
+  <section class="panel" id="visualizer" aria-labelledby="viz-title">
+    <div class="panel-head">
+      <h2 id="viz-title">Greedy Algorithm Visualizer</h2>
+      <span class="panel-hint" id="stepCounter">Step 0 / 0</span>
+    </div>
+
+    <ol class="phase-strip" id="phaseStrip" aria-label="Greedy algorithm phases"></ol>
+
+    <div class="viz-layout">
+      <div class="viz-main">
+        <div class="step-card" id="stepCard" aria-live="polite">
+          <div class="step-head">
+            <span class="step-badge" id="stepBadge">STEP 1</span>
+            <h3 id="stepTitle">Press &ldquo;Next Step&rdquo; or &ldquo;Auto Run&rdquo;</h3>
+          </div>
+          <ul class="step-detail" id="stepDetail">
+            <li>Run the optimizer to generate an algorithm trace.</li>
+          </ul>
+          <div class="step-resources">
+            <div class="res">
+              <span class="res-label">Free slots</span>
+              <strong class="res-value" id="stepSlots">&mdash;</strong>
+            </div>
+            <div class="res">
+              <span class="res-label">Power left</span>
+              <strong class="res-value" id="stepPower">&mdash;</strong>
+            </div>
+            <div class="res">
+              <span class="res-label">Queue position</span>
+              <strong class="res-value" id="stepQueue">&mdash;</strong>
+            </div>
+            <div class="res">
+              <span class="res-label">Active EV</span>
+              <strong class="res-value" id="stepEv">&mdash;</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-track" role="progressbar" aria-label="Visualizer progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="stepProgressBar">
+          <div class="progress-fill" id="stepProgress"></div>
+        </div>
+
+        <div class="viz-controls">
+          <button type="button" class="btn btn-secondary" id="btnPrevStep">&larr; Previous</button>
+          <button type="button" class="btn btn-primary" id="btnNextStep">Next Step &rarr;</button>
+          <button type="button" class="btn btn-accent" id="btnAutoRun">Auto Run</button>
+          <button type="button" class="btn btn-ghost" id="btnResetViz">Restart Trace</button>
+        </div>
+      </div>
+
+      <aside class="viz-side" aria-label="Algorithm log output">
+        <div class="log-head">
+          <h3>Algorithm Log</h3>
+          <button type="button" class="btn btn-mini" id="btnClearLog">Clear</button>
+        </div>
+        <ol class="log-list" id="logList" aria-live="polite" aria-relevant="additions" tabindex="0"></ol>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ========================== SIMULATION ========================== -->
+  <section class="panel" id="simulation" aria-labelledby="sim-title">
+    <div class="panel-head">
+      <h2 id="sim-title">Live Simulation</h2>
+      <span class="panel-hint" id="simStatus">Idle &mdash; press Start Simulation</span>
+    </div>
+
+    <div class="sim-arrivals" id="arrivalLane" aria-label="EV arrival feed"></div>
+
+    <div class="timeline-wrap" id="timelineWrap">
+      <h3 class="sub-title">Charging Schedule Timeline</h3>
+      <div class="timeline" id="timeline">
+        <p class="empty-note">The timeline appears after the greedy schedule is generated.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== BEFORE / AFTER COMPARISON ==================== -->
+  <section class="panel" id="comparison" aria-labelledby="cmp-title">
+    <div class="panel-head">
+      <h2 id="cmp-title">Before vs After Optimization</h2>
+      <span class="panel-hint">Baseline: First-Come-First-Served (arrival order, no priority scoring)</span>
+    </div>
+
+    <div class="cmp-cards">
+      <article class="cmp-card cmp-before">
+        <h3>Before Optimization</h3>
+        <p class="cmp-desc">Random / manual first-come-first-served allocation. No priority scoring, so a nearly-flat EV can occupy a slot while a critical EV waits.</p>
+        <ul class="cmp-list" id="cmpBeforeList"></ul>
+      </article>
+      <article class="cmp-card cmp-after">
+        <h3>After Greedy Optimization</h3>
+        <p class="cmp-desc">Priority-score driven allocation. The highest-priority feasible EV always gets the next free slot and the power it needs.</p>
+        <ul class="cmp-list" id="cmpAfterList"></ul>
+      </article>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table cmp-table" id="compareTable">
+        <caption class="sr-only">Performance metrics comparing the FCFS baseline with the greedy optimized schedule</caption>
+        <thead>
+          <tr>
+            <th scope="col">Metric</th>
+            <th scope="col" class="num">Before (FCFS)</th>
+            <th scope="col" class="num">After (Greedy)</th>
+            <th scope="col">Improvement</th>
+          </tr>
+        </thead>
+        <tbody id="compareBody"></tbody>
+      </table>
+    </div>
+    <p class="table-hint">All figures are recomputed from the live dataset on every run &mdash; both columns are produced by running the scheduler, not hardcoded.</p>
+  </section>
+
+  <!-- ========================== CHARTS ========================== -->
+  <section class="panel" id="charts" aria-labelledby="charts-title">
+    <div class="panel-head">
+      <h2 id="charts-title">Visual Analytics</h2>
+      <span class="panel-hint">Built with pure HTML / CSS / SVG &mdash; no chart library</span>
+    </div>
+
+    <div class="chart-grid">
+      <article class="chart-card chart-wide">
+        <h3>Priority Score by EV</h3>
+        <div class="bar-chart" id="chartPriority"></div>
+      </article>
+
+      <article class="chart-card">
+        <h3>Battery Levels</h3>
+        <div class="battery-grid" id="chartBattery"></div>
+      </article>
+
+      <article class="chart-card">
+        <h3>Slot Utilisation</h3>
+        <div class="ring-wrap" id="chartUtilRing"></div>
+      </article>
+
+      <article class="chart-card">
+        <h3>EV Status Distribution</h3>
+        <div class="ring-wrap" id="chartStatusDonut"></div>
+        <ul class="donut-legend" id="statusLegend"></ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ========================== ADD NEW EV ========================== -->
+  <section class="panel" id="add-ev" aria-labelledby="add-title">
+    <div class="panel-head">
+      <h2 id="add-title">Add New EV</h2>
+      <span class="panel-hint">Adding an EV re-runs the greedy optimizer automatically</span>
+    </div>
+
+    <form class="ev-form" id="evForm" novalidate>
+      <div class="field">
+        <label for="evModel">Model <span class="req" aria-hidden="true">*</span></label>
+        <input type="text" id="evModel" name="model" placeholder="e.g. Tata Nexon EV" required />
+        <small class="field-error" id="errEvModel" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="evBattery">Battery % <span class="req" aria-hidden="true">*</span></label>
+        <input type="number" id="evBattery" name="batteryPercentage" min="0" max="100" step="1" value="25" required />
+        <small class="field-error" id="errEvBattery" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="evCapacity">Battery Capacity (kWh) <span class="req" aria-hidden="true">*</span></label>
+        <input type="number" id="evCapacity" name="batteryCapacity" min="5" max="250" step="1" value="45" required />
+        <small class="field-error" id="errEvCapacity" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="evDistance">Remaining Distance (km) <span class="req" aria-hidden="true">*</span></label>
+        <input type="number" id="evDistance" name="remainingDistance" min="1" max="900" step="1" value="120" required />
+        <small class="field-error" id="errEvDistance" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="evChargingTime">Charging Time (min) <span class="req" aria-hidden="true">*</span></label>
+        <input type="number" id="evChargingTime" name="chargingTime" min="5" max="480" step="5" value="45" required />
+        <small class="field-error" id="errEvChargingTime" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="evPower">Required Power (kW) <span class="req" aria-hidden="true">*</span></label>
+        <input type="number" id="evPower" name="requiredPower" min="1" max="350" step="1" value="7" required />
+        <small class="field-error" id="errEvPower" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="evDeparture">Departure Time <span class="req" aria-hidden="true">*</span></label>
+        <input type="time" id="evDeparture" name="departureTime" required />
+        <small class="field-error" id="errEvDeparture" role="alert"></small>
+      </div>
+      <div class="field">
+        <label for="evPriority">Vehicle Priority <span class="req" aria-hidden="true">*</span></label>
+        <select id="evPriority" name="vehiclePriority" required>
+          <option value="Emergency">Emergency</option>
+          <option value="VIP">VIP</option>
+          <option value="Normal" selected>Normal</option>
+        </select>
+        <small class="field-error" id="errEvPriority" role="alert"></small>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="btnAddEv">Add EV &amp; Re-run Optimizer</button>
+        <button type="button" class="btn btn-ghost" id="btnClearForm">Clear Form</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- =================== ALGORITHM EXPLANATION =================== -->
+  <section class="panel" id="explanation" aria-labelledby="exp-title">
+    <div class="panel-head">
+      <h2 id="exp-title">Algorithm Explanation</h2>
+      <span class="panel-hint">Everything you need for the DSA viva</span>
+    </div>
+
+    <div class="exp-grid">
+      <article class="exp-card">
+        <h3>What is a Greedy Algorithm?</h3>
+        <p>A greedy algorithm makes the <strong>locally best choice</strong> at every step and never reconsiders it, hoping the sequence of local choices produces a globally good solution. It trades guaranteed optimality for speed and simplicity &mdash; <em>O(N log N)</em> instead of the exponential search an exact optimiser would need.</p>
+      </article>
+      <article class="exp-card">
+        <h3>Why is Greedy suitable here?</h3>
+        <p>Every EV wants the same scarce resource. There is no way to know future arrivals, and evaluating every possible schedule is combinatorially explosive. Greedy lets the station decide in milliseconds, and every decision is explainable: <em>&ldquo;EV-007 was picked because its priority score of 91.85 was the highest feasible one.&rdquo;</em></p>
+      </article>
+      <article class="exp-card">
+        <h3>The Greedy Choice</h3>
+        <p class="formula">&ldquo;At every iteration, allocate a charging slot to the <strong>highest-priority EV that can feasibly be charged right now</strong>.&rdquo;</p>
+        <p><strong>Local optimal choice:</strong> the top-ranked EV that still fits in a free slot and inside the remaining power budget.</p>
+        <p><strong>Greedy property:</strong> once a slot is given, the decision is final &mdash; we never shuffle it out for a lower-scoring EV later in the same pass.</p>
+      </article>
+      <article class="exp-card">
+        <h3>Feasibility &amp; Constraints</h3>
+        <ul class="tick-list">
+          <li><strong>Slot constraint</strong> &mdash; a free charging bay must exist.</li>
+          <li><strong>Power constraint</strong> &mdash; <code>requiredPower &le; availablePower</code>.</li>
+          <li><strong>Deadline constraint</strong> &mdash; <code>currentTime + chargingTime &le; departureTime</code> for a full charge.</li>
+          <li><strong>Priority tier</strong> &mdash; deadline-satisfiable EVs are placed first; at-risk EVs only consume leftover capacity (a partial charge beats an empty slot).</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="algorithm-box">
+      <h3>Greedy Rule &mdash; in one sentence</h3>
+      <p>The algorithm always selects the currently highest-priority EV that can be feasibly charged.</p>
+      <h4>Priority Score (weighted, every component normalised to 0&ndash;100)</h4>
+      <pre class="code-block">Priority Score =
+    (Urgency Score        &times; 0.30)   // charging time vs. time left before departure
+  + (Low Battery Score    &times; 0.25)   // 100 - battery%
+  + (Deadline Score       &times; 0.20)   // min-max normalised departure time
+  + (Distance Score       &times; 0.15)   // min-max normalised remaining distance
+  + (Vehicle Priority     &times; 0.10)   // Emergency 100 / VIP 70 / Normal 40</pre>
+      <h4>Worked example &mdash; why EV-007 was chosen first</h4>
+      <pre class="code-block">EV-007 :  Urgency 95 | Battery 90 | Deadline 88 | Distance 75 | Priority 100
+   95&times;0.30 + 90&times;0.25 + 88&times;0.20 + 75&times;0.15 + 100&times;0.10
+ = 28.50 + 22.50 + 17.60 + 11.25 + 10.00
+ = 91.85   &larr; highest score in the fleet, and feasible &rarr; allocated to Slot 1</pre>
+      <p class="warn-note"><strong>Honest limitation:</strong> Greedy does <em>not</em> necessarily guarantee a globally optimal schedule for every possible charging scenario. It is used here because the objective is to make fast, explainable priority-based scheduling decisions &mdash; and because the priority score itself encodes the business rules an optimal solver would need to search for.</p>
+    </div>
+  </section>
+
+  <!-- =================== COMPLEXITY ANALYSIS =================== -->
+  <section class="panel" id="complexity" aria-labelledby="cx-title">
+    <div class="panel-head">
+      <h2 id="cx-title">Complexity Analysis</h2>
+      <span class="panel-hint">N = number of EVs at the station</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table cx-table">
+        <caption class="sr-only">Time and space complexity of each stage of the greedy scheduler</caption>
+        <thead>
+          <tr>
+            <th scope="col">Stage</th>
+            <th scope="col">Function</th>
+            <th scope="col" class="num">Time</th>
+            <th scope="col">Why</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Priority calculation</td>
+            <td><code>calculatePriorityScore(ev)</code> + fleet context pass</td>
+            <td class="num">O(N)</td>
+            <td>Two linear passes: one to find the min/max context, one to score every EV with O(1) work each.</td>
+          </tr>
+          <tr>
+            <td>Sorting</td>
+            <td><code>sortVehiclesByPriority(vehicles)</code></td>
+            <td class="num">O(N log N)</td>
+            <td>Comparison sort. Every comparison costs O(1) (the score is precomputed), so N log N comparisons.</td>
+          </tr>
+          <tr>
+            <td>Greedy allocation</td>
+            <td><code>greedySchedule(vehicles, config)</code></td>
+            <td class="num">O(N)</td>
+            <td>A single pass over the sorted list. Each EV is inspected once, then moved into exactly one of selected / waiting / deferred.</td>
+          </tr>
+          <tr>
+            <td>Trace &amp; metrics</td>
+            <td><code>buildTrace()</code>, <code>computeMetrics()</code></td>
+            <td class="num">O(N)</td>
+            <td>One linear pass that emits the teaching log and the comparison statistics.</td>
+          </tr>
+          <tr class="cx-total">
+            <td><strong>Overall</strong></td>
+            <td><code>runOptimization()</code></td>
+            <td class="num"><strong>O(N log N)</strong></td>
+            <td><strong>Sorting dominates:</strong> O(N) + O(N log N) + O(N) = O(N log N).</td>
+          </tr>
+          <tr class="cx-total">
+            <td><strong>Space</strong></td>
+            <td>scored records + trace</td>
+            <td class="num"><strong>O(N)</strong></td>
+            <td>Two arrays of length N (scored vehicles, trace steps); no recursion, so no extra stack.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer class="app-footer">
+  <div class="shell footer-inner">
+    <p><strong>EV Charging Station Slot Optimizer</strong> &mdash; Greedy Algorithm Based Smart Charging Scheduler</p>
+    <p>HTML5 &middot; CSS3 &middot; Vanilla ES6+ JavaScript &middot; no frameworks, no backend, no database</p>
+    <p>DSA Capstone Project, CIA 2 &middot; Author: <strong>[Your Name]</strong> &middot; See README.md for the full report</p>
+  </div>
+</footer>
+
+<div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="false"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
